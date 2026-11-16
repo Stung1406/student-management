@@ -86,10 +86,13 @@ Cây dưới đây liệt kê mã nguồn và cấu hình dự án; không bung 
     │   └── icons.svg                               # Bộ SVG icon tĩnh
     └── src/
         ├── api.js                                  # Các hàm gọi HTTP tới backend
-        ├── App.jsx                                 # Giao diện CRUD sinh viên
+        ├── App.jsx                                 # Quản lý state và điều phối component
         ├── App.css                                 # CSS bổ sung cho App
         ├── index.css                               # CSS nền toàn trang
         ├── main.jsx                                # Khởi tạo React và nạp Bootstrap
+        ├── components/
+        │   ├── StudentForm.jsx                     # Form thêm và sửa sinh viên
+        │   └── StudentTable.jsx                    # Bộ lọc và bảng danh sách sinh viên
         └── assets/
             ├── hero.png                            # Ảnh tĩnh trong assets
             ├── react.svg                            # SVG React trong assets
@@ -224,7 +227,7 @@ File rỗng đánh dấu package `routers`. Router được import rõ ràng t�
 - Với status 204, hàm trả `null` vì response không có JSON.
 - Object `api` cung cấp các hàm tải lớp, tải/lọc sinh viên và tạo/cập nhật/xóa sinh viên. `URLSearchParams` mã hóa query `classid`.
 
-### `frontend/src/App.jsx` — Trang CRUD sinh viên
+### `frontend/src/App.jsx` — Điều phối trang CRUD sinh viên
 
 - State `classes` và `students` giữ dữ liệu lớp/sinh viên. `filter` giữ lớp đang lọc.
 - `form` lưu giá trị form; `editingId` là `null` khi thêm và là ID khi sửa.
@@ -234,7 +237,19 @@ File rỗng đánh dấu package `routers`. Router được import rõ ràng t�
 - `handleSubmit` ngăn submit HTML mặc định, đổi GPA thành số, chọn POST hoặc PATCH dựa trên `editingId`, reset form khi thành công và tải lại danh sách. Lỗi API hiện trong alert.
 - `handleEdit` chép dữ liệu hàng đang chọn vào form để chỉnh sửa.
 - `handleDelete` hỏi xác nhận bằng `window.confirm`, gọi API xóa và tải lại danh sách.
-- JSX dùng class Bootstrap cho form, bảng, nút và layout responsive. Nút Sửa/Xóa nằm theo từng hàng; bộ lọc lớp điều khiển query API.
+- JSX kết hợp component giao diện, giữ state và xử lý nghiệp vụ ở trang cha.
+
+### `frontend/src/components/StudentForm.jsx` — Form sinh viên
+
+- Nhận dữ liệu form, danh sách lớp và trạng thái thêm/sửa qua props.
+- Vẽ các input họ tên, lớp và GPA cùng nút lưu; `onChange`, `onSubmit` và `onCancel` báo thao tác về `App.jsx`.
+- Không gọi API và không giữ state nghiệp vụ riêng; cùng một form dùng được khi tạo hoặc sửa.
+
+### `frontend/src/components/StudentTable.jsx` — Bộ lọc và bảng
+
+- Nhận danh sách lớp/sinh viên, trạng thái tải và các callback từ `App.jsx`.
+- Hiển thị bộ lọc lớp, trạng thái đang tải/danh sách trống và từng hàng sinh viên.
+- Báo sự kiện lọc, sửa hoặc xóa lên component cha; không gọi API trực tiếp.
 
 ### `frontend/src/main.jsx` và CSS
 

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from './api'
+import StudentForm from './components/StudentForm'
+import StudentTable from './components/StudentTable'
 import './App.css'
 
 const emptyForm = { name: '', classid: '', gpa: '' }
@@ -50,6 +52,10 @@ export default function App() {
   const resetForm = () => {
     setForm(emptyForm)
     setEditingId(null)
+  }
+
+  const handleFormChange = (field, value) => {
+    setForm((currentForm) => ({ ...currentForm, [field]: value }))
   }
 
   const handleSubmit = async (event) => {
@@ -131,156 +137,27 @@ export default function App() {
           </div>
         )}
 
-        <section className="card border-0 shadow-sm mb-4">
-          <div className="card-body p-4">
-            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-              <h2 className="h5 fw-bold mb-0">
-                {editingId !== null ? 'Cập nhật sinh viên' : 'Thêm sinh viên'}
-              </h2>
-              {editingId !== null && (
-                <button type="button" className="btn btn-sm btn-outline-secondary" onClick={resetForm}>
-                  Hủy chỉnh sửa
-                </button>
-              )}
-            </div>
-
-            <form onSubmit={handleSubmit}>
-              <div className="row g-3 align-items-end">
-                <div className="col-12 col-md-5">
-                  <label htmlFor="student-name" className="form-label">Họ và tên</label>
-                  <input
-                    id="student-name"
-                    className="form-control"
-                    type="text"
-                    maxLength="100"
-                    placeholder="Nhập họ tên"
-                    value={form.name}
-                    onChange={(event) => setForm({ ...form, name: event.target.value })}
-                    required
-                  />
-                </div>
-                <div className="col-12 col-md-4">
-                  <label htmlFor="student-class" className="form-label">Lớp</label>
-                  <select
-                    id="student-class"
-                    className="form-select"
-                    value={form.classid}
-                    onChange={(event) => setForm({ ...form, classid: event.target.value })}
-                    required
-                  >
-                    <option value="">Chọn lớp</option>
-                    {classes.map((classroom) => (
-                      <option key={classroom.classid} value={classroom.classid}>
-                        {classroom.classname} ({classroom.classid})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-12 col-md-3">
-                  <label htmlFor="student-gpa" className="form-label">GPA (0–4)</label>
-                  <input
-                    id="student-gpa"
-                    className="form-control"
-                    type="number"
-                    min="0"
-                    max="4"
-                    step="0.01"
-                    placeholder="Ví dụ: 3.50"
-                    value={form.gpa}
-                    onChange={(event) => setForm({ ...form, gpa: event.target.value })}
-                    required
-                  />
-                </div>
-                <div className="col-12">
-                  <button className="btn btn-primary px-4" type="submit" disabled={submitting}>
-                    {submitting ? 'Đang lưu...' : editingId !== null ? 'Lưu thay đổi' : 'Thêm sinh viên'}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        <section className="card border-0 shadow-sm">
-          <div className="card-body p-0">
-            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 p-4">
-              <div>
-                <h2 className="h5 fw-bold mb-1">Sinh viên</h2>
-                <p className="small text-secondary mb-0">
-                  {students.length} sinh viên{filter ? ' trong lớp đã chọn' : ''}
-                </p>
-              </div>
-              <div className="filter-control">
-                <label htmlFor="class-filter" className="form-label small mb-1">Lọc theo lớp</label>
-                <select
-                  id="class-filter"
-                  className="form-select form-select-sm"
-                  value={filter}
-                  onChange={(event) => {
-                    setLoading(true)
-                    setFilter(event.target.value)
-                  }}
-                >
-                  <option value="">Tất cả lớp</option>
-                  {classes.map((classroom) => (
-                    <option key={classroom.classid} value={classroom.classid}>
-                      {classroom.classname}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th scope="col" className="ps-4">Mã</th>
-                    <th scope="col">Họ và tên</th>
-                    <th scope="col">Lớp</th>
-                    <th scope="col">GPA</th>
-                    <th scope="col" className="text-end pe-4">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td colSpan="5" className="text-center text-secondary py-5">Đang tải dữ liệu...</td></tr>
-                  ) : students.length === 0 ? (
-                    <tr><td colSpan="5" className="text-center text-secondary py-5">Chưa có sinh viên nào.</td></tr>
-                  ) : students.map((student) => {
-                    const classroom = classes.find((item) => item.classid === student.classid)
-                    return (
-                      <tr key={student.id}>
-                        <td className="ps-4 text-secondary">#{student.id}</td>
-                        <td className="fw-medium">{student.name}</td>
-                        <td>{classroom?.classname ?? student.classid}</td>
-                        <td><span className="badge text-bg-light">{Number(student.gpa).toFixed(2)}</span></td>
-                        <td className="text-end pe-4">
-                          <div className="d-inline-flex gap-2">
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-primary"
-                              onClick={() => handleEdit(student)}
-                            >
-                              Sửa
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-danger"
-                              onClick={() => handleDelete(student)}
-                            >
-                              Xóa
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
+        <StudentForm
+          classes={classes}
+          form={form}
+          editing={editingId !== null}
+          submitting={submitting}
+          onChange={handleFormChange}
+          onSubmit={handleSubmit}
+          onCancel={resetForm}
+        />
+        <StudentTable
+          classes={classes}
+          students={students}
+          filter={filter}
+          loading={loading}
+          onFilterChange={(classid) => {
+            setLoading(true)
+            setFilter(classid)
+          }}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       </main>
     </div>
   )

@@ -9,6 +9,7 @@ class ClassroomOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     classid: str
     classname: str
+    
 # ---------- Student ----------
 class StudentCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
